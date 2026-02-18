@@ -56,7 +56,13 @@ Sign in to <a href="https://console.cloud.google.com/apis" target="_blank">Googl
 
 ## Execute website using Docker
 
-Once finishing the steps in this README you can run the whole thing e.g. in Docker. This is the method we use on our private server. For approximating two years we were using GitHub as the OAuth Server as we had massive problems forwarding port 443 (https) to our server as required to use Google as a OAuth server. Anyhow since Februrary 2026 we use Google.To read about how we did this refer to **Executing using docker run.md** and **Executing using docker- compose.md**.
+Once finishing the steps in this README you can run the whole thing e.g. in Docker. This is the method we use on our private server. For approximating two years we were using GitHub as the OAuth Server as we had massive problems forwarding port 443 (https) to our server as required to use Google as a OAuth server. Anyhow since Februrary 2026 we use Google. To read about how we did this refer to the following links:  
+  
+**Executing using docker run.md**  
+https://github.com/cmbTea/A-website-protected-by-OAuth2-using-Docker/blob/main/Executing%20via%20docker%20run.md  
+  
+**Executing using docker- compose.md**  
+https://github.com/cmbTea/A-website-protected-by-OAuth2-using-Docker/blob/main/Executing%20via%20docker-compose.md  
 
 ## References
 
