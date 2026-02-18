@@ -1,0 +1,58 @@
+version: "3.0"
+services:
+  traefik:
+    image: traefik:v2.0
+    restart: always
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
+      - --certificatesresolvers.letsencrypt.acme.email=my@email.de
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      - --log.level=DEBUG
+      - --accesslog=true
+      - --api.insecure=true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - ./letsencrypt:/letsencrypt
+  
+  myown-website:
+    image: quay.io/oauth2-proxy/oauth2-proxy
+    restart: always
+    environment:
+      - OAUTH2_PROXY_PROVIDER=google
+      - OAUTH2_PROXY_CLIENT_ID=xxx
+      - OAUTH2_PROXY_CLIENT_SECRET=yyy
+      - OAUTH2_PROXY_COOKIE_SECRET=zzz
+      - OAUTH2_PROXY_HTTP_ADDRESS=:4180
+      - OAUTH2_PROXY_UPSTREAMS=file:///public/#/
+      - OAUTH2_PROXY_AUTHENTICATED_EMAILS_FILE=/whitelist/emailList.txt
+      - OAUTH2_PROXY_COOKIE_EXPIRE=30s
+      - OAUTH2_PROXY_SESSION_COOKIE_MINIMAL=true
+      - OAUTH2_PROXY_SKIP_PROVIDER_BUTTON=true
+      - OAUTH2_PROXY_COOKIE_CSRF_PER_REQUEST=true
+      - OAUTH2_PROXY_REDIRECT_URL=https://myowndomain.de/oauth2/callback
+      - OAUTH2_PROXY_COOKIE_SECURE=true
+      - OAUTH2_PROXY_COOKIE_CSRF_EXPIRE=5m
+      - LOG_LEVEL=debug
+    volumes:
+      - ../share/myown-website/public:/public
+      - ../share/myown-website/whitelist:/whitelist
+    labels:
+      - traefik.enable=true
+      # HTTP zu HTTPS Redirect
+      - traefik.http.routers.myown-website-http.rule=Host(`myowndomain.de`)
+      - traefik.http.routers.myown-website-http.entrypoints=web
+      - traefik.http.routers.myown-website-http.middlewares=redirect-to-https
+      # HTTPS Router
+      - traefik.http.routers.myown-website.rule=Host(`myowndomain.de`)
+      - traefik.http.routers.myown-website.entrypoints=websecure
+      - traefik.http.routers.myown-website.tls=true
+      - traefik.http.routers.myown-website.tls.certresolver=letsencrypt
+      # Service Port
+      - traefik.http.services.myown-website.loadbalancer.server.port=4180
